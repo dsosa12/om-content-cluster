@@ -266,22 +266,91 @@ function Sidebar(props) {
       </div>
       <div style={{ padding: "8px 8px 4px", borderTop: "1px solid rgba(255,255,255,.08)" }}>
         <button onClick={props.onNew} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(58,181,230,.4)", background: "transparent", color: OM_BLUE, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>+ New cluster</button>
-       <button onClick={props.onHome} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>Dashboard</button>
-<button onClick={props.onManagePractices} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Manage practices</button>
+        <button onClick={props.onManagePractices} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Manage practices</button>
       </div>
     </div>
   );
 }
 
-function EmptyState(props) {
+function Dashboard(props) {
+  var totalClusters = props.clusters.length;
+  var totalPosts = props.clusters.reduce(function(acc, c) { return acc + (c.posts ? c.posts.length : 0); }, 0);
+  var totalWritten = props.clusters.reduce(function(acc, c) { return acc + (c.posts ? c.posts.filter(function(p) { return p.status === "written"; }).length : 0); }, 0);
+
+  var byPractice = {};
+  props.clusters.forEach(function(c) {
+    var p = c.practice || "Unassigned";
+    if (!byPractice[p]) byPractice[p] = [];
+    byPractice[p].push(c);
+  });
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh", gap: 16, padding: "2rem" }}>
-      <div style={{ width: 56, height: 56, borderRadius: 16, background: OM_NAVY, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, color: OM_BLUE }}>+</div>
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 20, fontWeight: 600, marginBottom: 6, color: OM_NAVY }}>No clusters yet</div>
-        <div style={{ fontSize: 14, color: "#7a96aa" }}>Create your first content cluster to get started.</div>
+    <div style={{ padding: "2rem 1.5rem", maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ marginBottom: "2rem" }}>
+        <div style={{ fontSize: 11, fontWeight: 600, color: OM_BLUE, letterSpacing: ".08em", textTransform: "uppercase", marginBottom: 4 }}>OM Performance Marketing</div>
+        <h1 style={{ fontSize: 26, fontWeight: 700, color: OM_NAVY, marginBottom: 4 }}>Content Dashboard</h1>
+        <p style={{ fontSize: 14, color: "#7a96aa" }}>Overview of all your content clusters and posts.</p>
       </div>
-      <PrimaryBtn onClick={props.onNew}>+ New cluster</PrimaryBtn>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: "2rem" }}>
+        {[["Practices", props.practices.length], ["Clusters", totalClusters], ["Posts written", totalWritten + "/" + totalPosts]].map(function(item) {
+          return (
+            <div key={item[0]} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e4eaf0", padding: "1.25rem" }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#7a96aa", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: 8 }}>{item[0]}</div>
+              <div style={{ fontSize: 28, fontWeight: 700, color: OM_NAVY }}>{item[1]}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {totalClusters === 0 && (
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #e4eaf0", padding: "4rem 2rem", textAlign: "center" }}>
+          <div style={{ fontSize: 32, marginBottom: 12, color: OM_BLUE }}>+</div>
+          <div style={{ fontSize: 16, fontWeight: 500, marginBottom: 8, color: OM_NAVY }}>No clusters yet</div>
+          <div style={{ fontSize: 14, color: "#7a96aa", marginBottom: 20 }}>Create your first content cluster to get started.</div>
+          <PrimaryBtn onClick={props.onNew}>+ New cluster</PrimaryBtn>
+        </div>
+      )}
+
+      {Object.keys(byPractice).map(function(practice) {
+        return (
+          <div key={practice} style={{ marginBottom: "2rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: OM_NAVY, display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#e8f7fd", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 12, color: OM_BLUE }}>{practice.charAt(0)}</div>
+                {practice}
+              </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 12 }}>
+              {byPractice[practice].map(function(c) {
+                var written = (c.posts || []).filter(function(p) { return p.status === "written"; }).length;
+                var total = (c.posts || []).length;
+                var pct = total ? Math.round((written / total) * 100) : 0;
+                return (
+                  <div key={c.id} onClick={function() { props.onOpen(c); }} style={{ background: "#fff", borderRadius: 12, border: "1px solid #e4eaf0", padding: "1.25rem", cursor: "pointer", transition: "border .15s" }}>
+                    <div style={{ marginBottom: 6 }}><Badge stage={written === total && total > 0 ? "BOFU" : written > 0 ? "MOFU" : "TOFU"} /></div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: OM_NAVY, marginBottom: 4 }}>{c.keywordCategory}</div>
+                    <div style={{ fontSize: 12, color: "#7a96aa", marginBottom: 12 }}>{c.location}</div>
+                    <ProgressBar value={written} max={total} />
+                    <div style={{ marginTop: 12, display: "flex", gap: 3 }}>
+                      {(c.posts || []).map(function(p, i) {
+                        return <div key={i} style={{ width: 8, height: 8, borderRadius: "50%", background: p.status === "written" ? OM_BLUE : "#e4eaf0" }} />;
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+              <div onClick={props.onNew} style={{ background: "#fafbfc", borderRadius: 12, border: "2px dashed #e4eaf0", padding: "1.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#7a96aa", fontSize: 14, fontWeight: 500, minHeight: 120 }}>
+                <span style={{ fontSize: 20 }}>+</span> New cluster
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {totalClusters > 0 && (
+        <PrimaryBtn onClick={props.onNew} style={{ marginTop: "1rem" }}>+ New cluster</PrimaryBtn>
+      )}
     </div>
   );
 }
@@ -741,7 +810,7 @@ export default function App() {
     if (view === "new") return <NewCluster practices={practices} onManagePractices={function() { setView("practices"); }} onSave={function(c) { var next = clusters.concat([c]); updateClusters(next); setActiveCluster(c); setView("cluster"); }} onCancel={function() { setView(clusters.length ? "cluster" : "dashboard"); }} />;
     if (view === "post" && activeCluster && activePostIdx !== null) return <PostView cluster={activeCluster} postIdx={activePostIdx} onBack={function() { setView("cluster"); }} onUpdate={updateCluster} />;
     if (view === "cluster" && activeCluster) return <ClusterView cluster={activeCluster} onUpdate={updateCluster} onDelete={requestDelete} onOpenPost={function(idx) { setActivePostIdx(idx); setView("post"); }} />;
-    return <EmptyState onNew={function() { setView("new"); }} />;
+    return <Dashboard clusters={clusters} practices={practices} onOpen={selectCluster} onNew={function() { setView("new"); }} />;
   }
 
   return (
@@ -752,7 +821,8 @@ export default function App() {
         filter={filter} onFilter={setFilter}
         practices={practices}
         onManagePractices={function() { setView("practices"); }}
-        onHome={function() { setView(clusters.length ? "cluster" : "dashboard"); }}
+        onHome={function() { setView("dashboard"); }}
+
       />
       <div style={{ flex: 1, overflowY: "auto" }}>{mainContent()}</div>
       <DeleteModal
