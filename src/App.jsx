@@ -266,7 +266,8 @@ function Sidebar(props) {
       </div>
       <div style={{ padding: "8px 8px 4px", borderTop: "1px solid rgba(255,255,255,.08)" }}>
         <button onClick={props.onNew} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(58,181,230,.4)", background: "transparent", color: OM_BLUE, fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>+ New cluster</button>
-        <button onClick={props.onManagePractices} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Manage practices</button>
+       <button onClick={props.onHome} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>Dashboard</button>
+<button onClick={props.onManagePractices} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "1px solid rgba(255,255,255,.1)", background: "transparent", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Manage practices</button>
       </div>
     </div>
   );
